@@ -1,18 +1,21 @@
+import json
 import random
+from urllib.error import URLError
+from urllib.request import urlopen
 
-# External dependencies
-import httpx
 import ida_kernwin
 import idaapi
 import idautils
 
-
 try:
     # Generate true randomness if we got a connection to the outside world
-    drand_info = httpx.get("https://api.drand.sh/public/latest").json()
+    with urlopen("https://api.drand.sh/public/latest") as res:
+        drand_body = res.read()
+    drand_info = json.loads(drand_body.decode())
+
     seed = int(drand_info["randomness"], 16)
     random.seed(seed)
-except httpx.ConnectError:
+except URLError:
     # Use the default random seed otherwise
     pass
 
